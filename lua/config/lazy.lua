@@ -16,33 +16,103 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
   spec = {
-    -- add LazyVim and import its plugins
+    -- Adiciona LazyVim e importa seus plugins
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
-    -- import/override with your plugins
+
+    {
+      "nvim-treesitter/nvim-treesitter",
+      opts = {
+        ensure_installed = {
+          "bash",
+          "html",
+          "javascript",
+          "lua",
+          "regex",
+          "tsx",
+          "typescript",
+          "vim",
+          "yaml",
+        },
+      },
+    },
+    -- Importa/sobrescreve com seus próprios plugins
     { import = "plugins" },
+
+    {
+      "nvim-telescope/telescope.nvim",
+      dependencies = { "nvim-lua/plenary.nvim" },
+      config = function()
+        local telescope = require("telescope")
+        local telescope_builtin = require("telescope.builtin")
+
+        telescope.setup({
+          pickers = {
+            buffers = {
+              sort_mru = true,
+            },
+          },
+        })
+
+        vim.keymap.set("n", "<leader><leader>", function()
+          telescope_builtin.buffers({ sort_mru = true })
+        end)
+      end,
+    },
+    { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
+
+    -- {
+    --   "neovim/nvim-lspconfig",
+    --   opts = {
+    --     servers = { eslint = {}, tsserver = {} },
+    --     setup = {
+    --       eslint = function()
+    --         require("lazyvim.util").lsp.on_attach(function(client)
+    --           if client.name == "eslint" then
+    --             client.server_capabilities.documentFormattingProvider = true
+    --           elseif client.name == "tsserver" then
+    --             client.server_capabilities.documentFormattingProvider = false
+    --           end
+    --         end)
+    --       end,
+    --     },
+    --   },
+    -- },
+
+    {
+      "windwp/nvim-ts-autotag",
+      config = function()
+        require("nvim-ts-autotag").setup()
+      end,
+    },
+
+    {
+
+      "nvim-neo-tree/neo-tree.nvim",
+
+      branch = "v3.x",
+
+      dependencies = {
+        "nvim-lua/plenary.nvim",
+        "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+        "MunifTanjim/nui.nvim",
+        -- {"3rd/image.nvim", opts = {}}, -- Optional image support in preview window: See `# Preview Mode` for more information
+      },
+    },
   },
+
   defaults = {
-    -- By default, only LazyVim plugins will be lazy-loaded. Your custom plugins will load during startup.
-    -- If you know what you're doing, you can set this to `true` to have all your custom plugins lazy-loaded by default.
     lazy = false,
-    -- It's recommended to leave version=false for now, since a lot the plugin that support versioning,
-    -- have outdated releases, which may break your Neovim install.
-    version = false, -- always use the latest git commit
-    -- version = "*", -- try installing the latest stable version for plugins that support semver
+    version = false, -- sempre usar o último commit do Git
   },
   install = { colorscheme = { "tokyonight", "habamax" } },
   checker = {
-    enabled = true, -- check for plugin updates periodically
-    notify = false, -- notify on update
-  }, -- automatically check for plugin updates
+    enabled = true, -- verificar atualizações de plugins periodicamente
+    notify = false, -- notificar sobre atualizações
+  },
   performance = {
     rtp = {
-      -- disable some rtp plugins
       disabled_plugins = {
         "gzip",
-        -- "matchit",
-        -- "matchparen",
-        -- "netrwPlugin",
         "tarPlugin",
         "tohtml",
         "tutor",
@@ -51,3 +121,16 @@ require("lazy").setup({
     },
   },
 })
+
+vim.keymap.set("n", "<leader>e", ":Neotree toggle<CR>", { desc = "Toggle NeoTree" })
+
+-- Mapeamento de teclas para o comando Telescope live_grep
+
+local builtin = require("telescope.builtin")
+vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Telescope find files" })
+vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Telescope live grep" })
+vim.keymap.set("n", "<leader><leader>", builtin.buffers, { desc = "Telescope buffers" })
+vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Telescope help tags" })
+vim.keymap.set("n", "<C-a>", "ggVG")
+
+vim.keymap.set("n", "<leader>rf", vim.lsp.buf.rename, { desc = "LSP Rename (File, No Confirm)" })
